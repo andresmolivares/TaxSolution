@@ -69,44 +69,27 @@ namespace TaxSolution.Server
 
         private async Task<decimal> GetTaxAmountAsync(string orderResponse)
         {
-            // Post order for tax amount
-            var uri = @"https://api.taxjar.com/v2/taxes";
-            var http = (HttpWebRequest)WebRequest.Create(new Uri(uri));
-            var TOKEN = TaxJarHelper.GetToken();
-            http.Headers.Add("Authorization", $"Bearer {TOKEN}");
-            http.Headers.Add("x-api-version", "2020-08-07");
-            http.Accept = "application/json";
-            http.ContentType = "application/json";
-            http.Method = "POST";
-
-            // Prepare payload with order response values
-            var jsonResponse = JObject.Parse(orderResponse);
-            var payload = @"{
-  'from_country': '" + jsonResponse.SelectToken("$.from_country")?.ToString() + @"',
-  'from_zip': '" + jsonResponse.SelectToken("$.from_zip")?.ToString() + @"',
-  'from_state': '" + jsonResponse.SelectToken("$.from_state")?.ToString() + @"',
-  'to_country': '" + jsonResponse.SelectToken("$.to_country")?.ToString() + @"',
-  'to_zip': '" + jsonResponse.SelectToken("$.to_zip")?.ToString() + @"',
-  'to_state': '" + jsonResponse.SelectToken("$.to_state")?.ToString() + @"',
-  'amount': " + jsonResponse.SelectToken("$.amount")?.ToString() + @",
-  'shipping': " + jsonResponse.SelectToken("$.shipping")?.ToString() + @",
-  'line_items': " + jsonResponse.SelectToken("$.line_items") + @"
-}";
-            // Validate response
-            var validatedJson = payload.Replace("'", "\"");
-            // Process result and return tax amount
             try
             {
+                // Initialize request
+                var uri = @"https://api.taxjar.com/v2/taxes";
+                HttpWebRequest http = InitializeWebRequest(uri);
+
+                // Prepare order payload
+                var validatedJson = ParseAndValidateOrder(orderResponse);
+
                 // Transform into stream
                 byte[] bytes = new ASCIIEncoding().GetBytes(validatedJson);
                 Stream newStream = http.GetRequestStream();
                 newStream.Write(bytes, 0, bytes.Length);
                 newStream.Close();
+
                 // Read response content
                 var response = http.GetResponse();
                 var stream = response.GetResponseStream();
                 using var sr = new StreamReader(stream);
                 var content = sr.ReadToEnd();
+
                 // Extract rate value
                 var jsonResult = JObject.Parse(content);
                 var taxAmount = jsonResult.SelectToken("$.tax.amount_to_collect").ToString();
@@ -119,6 +102,37 @@ namespace TaxSolution.Server
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        private HttpWebRequest InitializeWebRequest(string uri)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(new Uri(uri));
+            var TOKEN = TaxJarHelper.GetToken();
+            request.Headers.Add("Authorization", $"Bearer {TOKEN}");
+            request.Headers.Add("x-api-version", "2020-08-07");
+            request.Accept = "application/json";
+            request.ContentType = "application/json";
+            request.Method = "POST";
+            return request;
+        }
+
+        private string ParseAndValidateOrder(string response)
+        {
+            // Prepare payload with order response values
+            var jsonResponse = JObject.Parse(response);
+            var payload = @"{
+  'from_country': '" + jsonResponse.SelectToken("$.from_country")?.ToString() + @"',
+  'from_zip': '" + jsonResponse.SelectToken("$.from_zip")?.ToString() + @"',
+  'from_state': '" + jsonResponse.SelectToken("$.from_state")?.ToString() + @"',
+  'to_country': '" + jsonResponse.SelectToken("$.to_country")?.ToString() + @"',
+  'to_zip': '" + jsonResponse.SelectToken("$.to_zip")?.ToString() + @"',
+  'to_state': '" + jsonResponse.SelectToken("$.to_state")?.ToString() + @"',
+  'amount': " + jsonResponse.SelectToken("$.amount")?.ToString() + @",
+  'shipping': " + jsonResponse.SelectToken("$.shipping")?.ToString() + @",
+  'line_items': " + jsonResponse.SelectToken("$.line_items") + @"
+}";
+            // Validate response
+            return payload.Replace("'", "\"");
         }
 
         private WebClient GetServiceConnection()

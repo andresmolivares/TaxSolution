@@ -27,7 +27,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public async Task<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
+        public async ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
         {
             // Process request
             var zip = location.Zip;
@@ -58,7 +58,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public async Task<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
+        public async ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
         {
             // Find and return order data response
             var jsonOrder = JsonSerializer.Serialize(order);
@@ -68,7 +68,7 @@ namespace TaxSolution.Server
             return await GetTaxAmountAsync(orderResponse, token);
         }
 
-        private async Task<decimal> GetTaxAmountAsync(string jsonData, CancellationToken token)
+        private async ValueTask<decimal> GetTaxAmountAsync(string jsonData, CancellationToken token)
         {
             // Post order for tax amount
             var httpContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
@@ -83,7 +83,7 @@ namespace TaxSolution.Server
                 : throw new Exception($"Could not process rate value response: {amountValue}");
         }
 
-        private async Task<string> GetDataFromHttpClient(string uri, CancellationToken token)
+        private async ValueTask<string> GetDataFromHttpClient(string uri, CancellationToken token)
         {
             // Process request and return content result
             using var hc = GetServiceConnection();
@@ -91,7 +91,7 @@ namespace TaxSolution.Server
             return await response.Content.ReadAsStringAsync();
         }
 
-        private async Task<string> PostDataFromHttpClient(string uri, HttpContent payload, CancellationToken token)
+        private async ValueTask<string> PostDataFromHttpClient(string uri, HttpContent payload, CancellationToken token)
         {
             // Process request and return content result
             if (payload == null)

@@ -6,7 +6,7 @@ using TaxSolution.Server;
 
 namespace TaxSolution.Tests
 {
-    public class TaxJarHelperTests : BaseTaxJarTesting
+    public class TaxCalxulatorFactoryTests : BaseTaxJarTesting
     {
         [TestCaseSource(nameof(LoadCalcKeyTestCases))]
         [Test]

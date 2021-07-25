@@ -17,13 +17,13 @@ namespace TaxSolution.Models
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        Task<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token);
+        ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token);
 
         /// <summary>
         /// Returns the tax amount for the specified order.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        Task<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token);
+        ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token);
     }
 }

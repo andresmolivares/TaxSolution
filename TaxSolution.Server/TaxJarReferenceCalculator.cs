@@ -23,7 +23,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public async Task<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
+        public async ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
         {
             // Process request
             var client = GetServiceConnection();
@@ -49,7 +49,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public async Task<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
+        public async ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
         {
             // Get service ref and call API
             var client = GetServiceConnection();

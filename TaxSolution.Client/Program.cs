@@ -9,6 +9,7 @@ namespace TaxSolution.Client
         private static IServiceProvider serviceProvider;
 
         /// <summary>
+        /// Main client process.
         /// </summary>
         /// <param name="args"></param>
         static async Task Main(string[] args)

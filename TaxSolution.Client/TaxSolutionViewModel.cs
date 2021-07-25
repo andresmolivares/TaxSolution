@@ -9,13 +9,6 @@ namespace TaxSolution.Client
 {
     public class TaxSolutionViewModel
     {
-        // NOTE: Also try calcKey values "ref" and "web"
-        // for different calculator implementations
-        // TODO: Move to config file and read on initialization
-        internal const string CALC_KEY = "http";
-        //internal const string CALC_KEY = "ref";
-        //internal const string CALC_KEY = "web";
-
         /// <summary>
         /// Returns the tax rate for the specified location.
         /// </summary>
@@ -77,12 +70,6 @@ namespace TaxSolution.Client
         {
             // Initialize client connection
             return new HttpClient();
-        }
-
-        public static TaxOrderRequest GenerateOrderRequest()
-        {
-            // Get tax amount for order request
-            return TaxOrderRequestHelper.SimulateOrder(CALC_KEY);
         }
     }
 }

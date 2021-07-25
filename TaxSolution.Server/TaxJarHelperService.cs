@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using System.Text.Json;
 using Taxjar;
 using TaxSolution.Models;
@@ -122,7 +123,18 @@ namespace TaxSolution.Server
                     FromZip = orderRequest.from_zip,
                     ToCountry = orderRequest.to_country,
                     ToState = orderRequest.to_state,
-                    ToZip = orderRequest.to_zip
+                    ToZip = orderRequest.to_zip,
+                    LineItems = orderRequest.line_items.Select(li =>
+                       {
+                           return new LineItem
+                           {
+                               Id = li.id,
+                               Quantity = li.quantity,
+                               ProductTaxCode = li.product_tax_code,
+                               UnitPrice = li.unit_price,
+                               Discount = li.discount
+                           };
+                       }).ToList()
                 };
             }
             return null;

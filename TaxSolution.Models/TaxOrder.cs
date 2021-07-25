@@ -3,7 +3,7 @@
 namespace TaxSolution.Models
 {
     /// <summary>
-    /// Represents a tax order
+    /// Represents a tax order.
     /// </summary>
     public record TaxOrder
     {

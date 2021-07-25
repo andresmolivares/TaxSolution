@@ -1,7 +1,7 @@
 ﻿namespace TaxSolution.Models
 {
     /// <summary>
-    /// Base tax request that supports calculator key
+    /// Represents a base tax request class that supports calculator key.
     /// </summary>
     public abstract record BaseTaxRequest
     {

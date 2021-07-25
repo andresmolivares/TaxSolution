@@ -1,7 +1,7 @@
 ﻿namespace TaxSolution.Models
 {
     /// <summary>
-    /// Represents a tax order request
+    /// Represents a tax order request.
     /// </summary>
     public record TaxLocationRequest : BaseTaxRequest
     {

@@ -10,7 +10,9 @@ namespace TaxSolution.Server
     public static class TaxCalculatorFactory
     {
         /// <summary>
-        /// Gets instance of calculator based on key. 
+        /// Gets instance of calculator based on key. This factory
+        /// has references to all dependencies necessary to 
+        /// create instances of ITaxCalculator implementations.
         /// </summary>
         /// <requiement>
         /// Eventually we would have several Tax Calculators and 

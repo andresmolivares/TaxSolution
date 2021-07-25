@@ -3,7 +3,7 @@
 namespace TaxSolution.Models
 {
     /// <summary>
-    /// Represents a helper class to generate tax order requests
+    /// Represents a helper class to generate tax order requests.
     /// </summary>
     public static class TaxOrderRequestHelper
     {
@@ -13,7 +13,7 @@ namespace TaxSolution.Models
         /// <returns></returns>
         public static TaxOrderRequest SimulateOrder(string calcKey)
         {
-            var orderRequest = new TaxOrder
+            var order = new TaxOrder
             {
                 from_country = "US",
                 from_state = "CA",
@@ -28,8 +28,8 @@ namespace TaxSolution.Models
                     new TaxOrderLineitem { id = "3", quantity = 3, product_tax_code = "40010", unit_price = 15m, discount = 0 }
                 }
             };
-            orderRequest.amount = orderRequest.line_items.Sum(li => li.quantity * li.unit_price);
-            return new TaxOrderRequest { CalcKey = calcKey, Order = orderRequest };
+            order.amount = order.line_items.Sum(li => li.quantity * li.unit_price);
+            return new TaxOrderRequest { CalcKey = calcKey, Order = order };
         }
     }
 }

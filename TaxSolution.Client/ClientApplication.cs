@@ -13,31 +13,44 @@ namespace TaxSolution.Client
             vm = _vm;
         }
 
+        /// <summary>
+        /// Runs the <see cref="ClientApplication"/> app.
+        /// </summary>
+        /// <returns></returns>
         public async Task Run()
         {
+            static string getCalculatorKey()
+            {
+                // NOTE: Also try calcKey values "ref" and "web"
+                // for different calculator implementations
+                return "http";
+                //return "ref";
+                //return "web";
+            }
+
             // Get tax rates for location - Flanders, NJ
-            await RequestTaxRateForLocationAsync("07836");
+            await RequestTaxRateForLocationAsync(getCalculatorKey(), "07836");
+
             // Get generated tax order request
-            var request = TaxSolutionViewModel.GenerateOrderRequest();
-            await RequestTaxforOrderRequestAsync(request);
+            await RequestTaxforOrderRequestAsync(getCalculatorKey());
         }
 
-        async Task RequestTaxRateForLocationAsync(string zip, string country = "US")
+        async Task RequestTaxRateForLocationAsync(string calcKey, string zip, string country = "US")
         {
+            // Create request
             var request = new TaxLocationRequest
             {
-                CalcKey = TaxSolutionViewModel.CALC_KEY,
+                CalcKey = calcKey,
                 Location = new TaxLocation { Zip = zip, Country = country }
             };
+
             try
             {
                 // Get the rates for the location
                 var rates = await vm.GetTaxRateByLocationAsync(request);
 
                 // Output to the client
-                Console.WriteLine(Environment.NewLine);
                 Console.WriteLine(@$"The tax rates for the location {request.Location.Zip}, {request.Location.Country} are {rates}");
-                Console.WriteLine(Environment.NewLine);
                 await Task.Yield();
             }
             catch (Exception e)
@@ -46,17 +59,18 @@ namespace TaxSolution.Client
             }
         }
 
-        async Task RequestTaxforOrderRequestAsync(TaxOrderRequest orderRequest)
+        async Task RequestTaxforOrderRequestAsync(string calcKey)
         {
+            // Create request
+            var orderRequest = TaxOrderRequestHelper.SimulateOrder(calcKey);
+
             try
             {
                 // Get tax value for order
                 var tax = await vm.GetTaxForOrderRequestAsync(orderRequest);
 
                 // Output to the client
-                Console.WriteLine(Environment.NewLine);
                 Console.WriteLine(@$"The calculated tax is {tax:C} for the following order request {orderRequest}.");
-                Console.WriteLine(Environment.NewLine);
                 await Task.Yield();
             }
             catch (Exception e)

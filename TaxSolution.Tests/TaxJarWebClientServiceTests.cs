@@ -34,7 +34,7 @@ namespace TaxSolution.Tests
         }
 
         [Test]
-        public async Task GetTaxForOrderTest()
+        public async Task GetTaxForOrderRequestTest()
         {
             const string key = "web";
             var request = TaxOrderRequestHelper.SimulateOrder(key);

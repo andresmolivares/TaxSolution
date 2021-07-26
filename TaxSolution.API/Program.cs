@@ -3,6 +3,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace TaxSolution.API
 {
+    /// <summary>
+    /// Represents a class the runs the main server process.
+    /// </summary>
     public class Program
     {
         /// <summary>

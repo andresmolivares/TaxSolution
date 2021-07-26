@@ -11,7 +11,7 @@ namespace TaxSolution.Models
         /// Returns a simulated tax order request.
         /// </summary>
         /// <returns></returns>
-        public static TaxOrderRequest SimulateOrder(string calcKey)
+        public static TaxOrderRequest GetSimulatedTaxOrderRequest(string calcKey)
         {
             var order = new TaxOrder
             {

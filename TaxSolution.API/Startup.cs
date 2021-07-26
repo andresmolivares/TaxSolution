@@ -27,11 +27,6 @@ namespace TaxSolution.API
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            // NOTE: Using TaxCalculatorFactorty for key-based instantiation
-            //services.AddTransient<ITaxCalculator, TaxJarHttpClientCalculator>();
-            //services.AddTransient<ITaxCalculator, TaxJarReferenceCalculator>();
-            //services.AddTransient<ITaxCalculator, TaxJarWebClientCalculator>();
-
             // Register server resources
             services.AddControllers();
             services.AddSwaggerGen(c =>

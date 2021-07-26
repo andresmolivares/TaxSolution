@@ -7,6 +7,9 @@ using TaxSolution.Models;
 
 namespace TaxSolution.Client
 {
+    /// <summary>
+    /// Represents a view model class for the client application.
+    /// </summary>
     public class TaxSolutionViewModel
     {
         /// <summary>

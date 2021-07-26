@@ -62,7 +62,7 @@ namespace TaxSolution.Client
         async Task RequestTaxforOrderRequestAsync(string calcKey)
         {
             // Create request
-            var orderRequest = TaxOrderRequestHelper.SimulateOrder(calcKey);
+            var orderRequest = TaxOrderRequestHelper.GetSimulatedTaxOrderRequest(calcKey);
 
             try
             {

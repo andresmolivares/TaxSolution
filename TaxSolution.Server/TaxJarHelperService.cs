@@ -7,6 +7,9 @@ using TaxSolution.Models;
 
 namespace TaxSolution.Server
 {
+    /// <summary>
+    /// Respresents a helper class for TaxJar calculator implementations.
+    /// </summary>
     public static class TaxJarHelper
     {
         /// <summary>

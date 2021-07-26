@@ -4,8 +4,15 @@ using System.Linq;
 
 namespace TaxSolution.Tests
 {
+    /// <summary>
+    /// Represents a base class used to exposed centralized test case data sources.
+    /// </summary>
     public class BaseTaxJarTesting
     {
+        /// <summary>
+        /// Loads zip and country location data for tax rates test cases.
+        /// </summary>
+        /// <returns></returns>
         public static List<TestCaseData> LoadTaxRateByLocationTestCases()
         {
             return new[]
@@ -20,6 +27,10 @@ namespace TaxSolution.Tests
             .ToList();
         }
 
+        /// <summary>
+        /// Loads calculator key data for calculator instantition test cases.
+        /// </summary>
+        /// <returns></returns>
         public static List<string> LoadCalcKeyTestCases()
         {
             return new[]

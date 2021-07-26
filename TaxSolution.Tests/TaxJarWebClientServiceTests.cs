@@ -14,7 +14,7 @@ namespace TaxSolution.Tests
         [SetUp]
         public void Setup()
         {
-            _calculator = TaxCalculatorFactory.GetCalculator("web");
+            _calculator = TaxCalculatorFactory.GetCalculatorInstance("web");
             Assert.IsInstanceOf<ITaxCalculator>(_calculator);
         }
 
@@ -37,7 +37,7 @@ namespace TaxSolution.Tests
         public async Task GetTaxForOrderRequestTest()
         {
             const string key = "web";
-            var request = TaxOrderRequestHelper.SimulateOrder(key);
+            var request = TaxOrderRequestHelper.GetSimulatedTaxOrderRequest(key);
             var orderTax = await _calculator.GetTaxForOrderRequestAsync(request.Order, CancellationToken.None);
             Console.WriteLine($"Order tax for order request is {orderTax}");
             Assert.IsTrue(orderTax >= 0.0M);

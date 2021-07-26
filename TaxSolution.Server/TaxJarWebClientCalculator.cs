@@ -76,7 +76,7 @@ namespace TaxSolution.Server
                 HttpWebRequest http = InitializeWebRequest(uri);
 
                 // Prepare order payload
-                var validatedJson = ParseAndValidateOrder(orderResponse);
+                var validatedJson = ValidateOrderResponse(orderResponse);
 
                 // Transform into stream
                 byte[] bytes = new ASCIIEncoding().GetBytes(validatedJson);
@@ -116,9 +116,9 @@ namespace TaxSolution.Server
             return request;
         }
 
-        private string ParseAndValidateOrder(string response)
+        private string ValidateOrderResponse(string response)
         {
-            // Prepare payload with order response values
+            // Verify that the order response contains valid json data
             var jsonResponse = JObject.Parse(response);
             var payload = @"{
   'from_country': '" + jsonResponse.SelectToken("$.from_country")?.ToString() + @"',
@@ -131,7 +131,6 @@ namespace TaxSolution.Server
   'shipping': " + jsonResponse.SelectToken("$.shipping")?.ToString() + @",
   'line_items': " + jsonResponse.SelectToken("$.line_items") + @"
 }";
-            // Validate response
             return payload.Replace("'", "\"");
         }
 

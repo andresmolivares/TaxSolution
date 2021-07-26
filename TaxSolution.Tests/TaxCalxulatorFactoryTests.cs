@@ -12,7 +12,7 @@ namespace TaxSolution.Tests
         [Test]
         public async Task InstantiateCalculatorTest(string key)
         {
-            var calculator = TaxCalculatorFactory.GetCalculator(key);
+            var calculator = TaxCalculatorFactory.GetCalculatorInstance(key);
             Assert.IsInstanceOf<ITaxCalculator>(calculator);
             await Task.Yield();
         }
@@ -23,7 +23,7 @@ namespace TaxSolution.Tests
             Assert.Throws<ArgumentException>(() =>
             {
                 var key = "invalid";
-                var calculator = TaxCalculatorFactory.GetCalculator(key);
+                var calculator = TaxCalculatorFactory.GetCalculatorInstance(key);
             });
             await Task.Yield();
         }

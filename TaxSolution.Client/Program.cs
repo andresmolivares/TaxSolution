@@ -4,14 +4,13 @@ using System.Threading.Tasks;
 
 namespace TaxSolution.Client
 {
+    /// <summary>
+    /// Represents a class the runs the main client process.
+    /// </summary>
     class Program
     {
         private static IServiceProvider serviceProvider;
 
-        /// <summary>
-        /// Main client process.
-        /// </summary>
-        /// <param name="args"></param>
         static async Task Main(string[] args)
         {
             // Registering types into client container

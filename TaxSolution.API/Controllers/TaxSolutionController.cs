@@ -23,7 +23,7 @@ namespace TaxSolution.API.Controllers
 
         private void GetCalculator(string key)
         {
-            calculator = TaxCalculatorFactory.GetCalculator(key);
+            calculator = TaxCalculatorFactory.GetCalculatorInstance(key);
         }
 
         /// <summary>

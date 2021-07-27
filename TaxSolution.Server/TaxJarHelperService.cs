@@ -32,52 +32,59 @@ namespace TaxSolution.Server
         /// 
         public static string ValidateOrderResponse(string orderResponse)
         {
-            // Validate shipping and amount value
-            var parsedOrder = JObject.Parse(orderResponse).SelectToken("order")?.ToString();
-            var rootNode = parsedOrder ?? orderResponse;
-            var validatedJson = JObject.Parse(rootNode);
-            var shippingValue = validatedJson["shipping"].ToString();
-            validatedJson["shipping"] = decimal.TryParse(shippingValue, out var shipping)
-                ? shipping
-                : shippingValue;
-            var amountValue = validatedJson["amount"].ToString();
-            validatedJson["amount"] = decimal.TryParse(amountValue, out var amount)
-                ? amount
-                : amountValue;
-            // Apply exemption type
-            var exemptionTypeValue = validatedJson["exemption_type"].ToString();
-            validatedJson["exemption_type"] = !string.IsNullOrWhiteSpace(exemptionTypeValue)
-                ? exemptionTypeValue
-                : "marketplace";
-            // Validate both state and zip values
-            if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"].ToString())
-                && !string.IsNullOrWhiteSpace(validatedJson["to_state"].ToString())
-                && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString())
-                && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
+            try
             {
-                validatedJson["from_zip"] = validatedJson["to_zip"].ToString();
-                validatedJson["from_state"] = validatedJson["to_state"].ToString();
+                // Validate shipping and amount value
+                var parsedOrder = JObject.Parse(orderResponse).SelectToken("order")?.ToString();
+                var rootNode = parsedOrder ?? orderResponse;
+                var validatedJson = JObject.Parse(rootNode);
+                var shippingValue = validatedJson["shipping"].ToString();
+                validatedJson["shipping"] = decimal.TryParse(shippingValue, out var shipping)
+                    ? shipping
+                    : shippingValue;
+                var amountValue = validatedJson["amount"].ToString();
+                validatedJson["amount"] = decimal.TryParse(amountValue, out var amount)
+                    ? amount
+                    : amountValue;
+                // Apply exemption type
+                var exemptionTypeValue = validatedJson["exemption_type"].ToString();
+                validatedJson["exemption_type"] = !string.IsNullOrWhiteSpace(exemptionTypeValue)
+                    ? exemptionTypeValue
+                    : "marketplace";
+                // Validate both state and zip values
+                if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"].ToString())
+                    && !string.IsNullOrWhiteSpace(validatedJson["to_state"].ToString())
+                    && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString())
+                    && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
+                {
+                    validatedJson["from_zip"] = validatedJson["to_zip"].ToString();
+                    validatedJson["from_state"] = validatedJson["to_state"].ToString();
+                }
+                // Validate zip value
+                if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"].ToString())
+                    && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString()))
+                {
+                    validatedJson["from_zip"] = validatedJson["to_zip"].ToString();
+                }
+                // Validate state value
+                if (!string.IsNullOrWhiteSpace(validatedJson["to_state"].ToString())
+                    && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
+                {
+                    validatedJson["from_state"] = validatedJson["to_state"].ToString();
+                }
+                // Validate country value
+                if (!string.IsNullOrWhiteSpace(validatedJson["to_country"].ToString())
+                    && string.IsNullOrWhiteSpace(validatedJson["from_country"]?.ToString()))
+                {
+                    validatedJson["from_country"] = validatedJson["to_country"].ToString();
+                }
+                // Return the serialize validated json order
+                return Newtonsoft.Json.JsonConvert.SerializeObject(validatedJson, Newtonsoft.Json.Formatting.Indented);
             }
-            // Validate zip value
-            if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"].ToString())
-                && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString()))
+            catch (Exception e)
             {
-                validatedJson["from_zip"] = validatedJson["to_zip"].ToString();
+                throw new Exception($"Encountered issues validating order response.", e);
             }
-            // Validate state value
-            if (!string.IsNullOrWhiteSpace(validatedJson["to_state"].ToString())
-                && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
-            {
-                validatedJson["from_state"] = validatedJson["to_state"].ToString();
-            }
-            // Validate country value
-            if (!string.IsNullOrWhiteSpace(validatedJson["to_country"].ToString())
-                && string.IsNullOrWhiteSpace(validatedJson["from_country"]?.ToString()))
-            {
-                validatedJson["from_country"] = validatedJson["to_country"].ToString();
-            }
-            // Return the serialize validated json order
-            return Newtonsoft.Json.JsonConvert.SerializeObject(validatedJson, Newtonsoft.Json.Formatting.Indented);
         }
 
         /// <summary>
@@ -88,22 +95,27 @@ namespace TaxSolution.Server
         /// <returns></returns>
         public static RateResponseAttributes DeserializeRateResponse(string rateJsonResponse)
         {
-            // NOTE: Fields names have "_"; need to remove
-            var cleanJson = rateJsonResponse.Replace("_", string.Empty);
-            // NOTE: Fields are retunred in a rate root node; need to extract
-            var parsedJson = JObject.Parse(cleanJson).SelectToken("rate").ToString();
-            //Console.WriteLine(parsedJson);
-            // NOTE: During deserialization, numeric values are returned as strings. Adjusting serialization behavior with options.
-            var deserialOptions = new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
-            };
+                // NOTE: Fields names have "_"; need to remove
+                var cleanJson = rateJsonResponse.Replace("_", string.Empty);
+                // NOTE: Fields are retunred in a rate root node; need to extract
+                var parsedJson = JObject.Parse(cleanJson).SelectToken("rate").ToString();
+                //Console.WriteLine(parsedJson);
+                // NOTE: During deserialization, numeric values are returned as strings. Adjusting serialization behavior with options.
+                var deserialOptions = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+                };
 
-            var response = JsonSerializer.Deserialize<RateResponseAttributes>(parsedJson, deserialOptions);
-            if (response == null)
-                throw new Exception($"Encountered issues parsing rate response: {parsedJson}");
-            return response;
+                var response = JsonSerializer.Deserialize<RateResponseAttributes>(parsedJson, deserialOptions);
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Encountered issues parsing rate response.", e);
+            }
         }
 
         /// <summary>

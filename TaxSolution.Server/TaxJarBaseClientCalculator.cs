@@ -12,9 +12,19 @@ namespace TaxSolution.Server
 {
     public abstract class TaxJarBaseClientCalculator : ITaxCalculator
     {
+        /// <summary>
+        /// Returns the tax rate used for the specified location.
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public abstract ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token);
 
-        public async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrder? order, CancellationToken token)
+        /// <summary>
+        /// Returns the tax amount for the specified order.
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public virtual async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrder? order, CancellationToken token)
         {
             var jsonOrder = JsonSerializer.Serialize(order);
             var orderResponse = ValidateOrderResponse(jsonOrder);
@@ -23,6 +33,12 @@ namespace TaxSolution.Server
             return await GetTaxAmountAsync(orderResponse, token);
         }
 
+        /// <summary>
+        /// Gets tax amount from the provided Json data.
+        /// </summary>
+        /// <param name="jsonData"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         protected virtual async ValueTask<decimal> GetTaxAmountAsync(string? jsonData, CancellationToken token)
         {
             return await Task.FromResult(-0.01m);

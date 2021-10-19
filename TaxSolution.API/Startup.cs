@@ -28,6 +28,7 @@ namespace TaxSolution.API
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Configure TaxJar settings
             services.Configure<TaxJarConfiguration>(Configuration.GetSection("TaxConfig"));
             // Register server resources
             services.AddControllers();

@@ -1,74 +1,36 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace TaxSolution.Models.TaxOrder
 {
     /// <summary>
-    /// Represents a tax 
+    /// Represents a tax order.
     /// </summary>
     public record TaxOrder
     {
-        [JsonPropertyName("FromLocation")]
-        //[JsonConverter(typeof(TaxLocationConverter))]
-        public TaxLocation.TaxLocation? FromLocation { get; set; }
-        [JsonPropertyName("ToLocation")]
-        //[JsonConverter(typeof(TaxLocationConverter))]
-        public TaxLocation.TaxLocation? ToLocation { get; set; }
-        [JsonPropertyName("amount")]
-        public decimal Amount { get; set; } = 0.00m;
-        [JsonPropertyName("shipping")]
-        public decimal Shipping { get; set; } = 0.00m;
-        [JsonPropertyName("line_items")]
-        public IEnumerable<TaxOrderLineitem>? LineItems { get; set; }
-        [JsonPropertyName("exemption_type")]
-        public string? ExemptionType { get; set; } = "marketplace";
-
-        public void Validate()
-        {
-            if (FromLocation is not null)
-            {
-                if (!string.IsNullOrWhiteSpace(ToLocation?.Zip)
-                && !string.IsNullOrWhiteSpace(ToLocation?.State)
-                && string.IsNullOrWhiteSpace(FromLocation.Zip)
-                && string.IsNullOrWhiteSpace(FromLocation.State))
-                {
-                    FromLocation.Zip = ToLocation?.Zip;
-                    FromLocation.State = ToLocation?.State;
-                }
-                if (!string.IsNullOrWhiteSpace(ToLocation?.Zip)
-                    && string.IsNullOrWhiteSpace(FromLocation.Zip))
-                {
-                    FromLocation.Zip = ToLocation?.Zip;
-                }
-                // Validate state value
-                if (!string.IsNullOrWhiteSpace(ToLocation?.State)
-                    && string.IsNullOrWhiteSpace(FromLocation.State))
-                {
-                    FromLocation.State = ToLocation?.State;
-                }
-                // Validate country value
-                if (!string.IsNullOrWhiteSpace(ToLocation?.Country)
-                    && string.IsNullOrWhiteSpace(FromLocation.Country))
-                {
-                    FromLocation.Country = ToLocation.Country;
-                }
-            }
-        }
-
+        public string? from_country { get; set; }
+        public string? from_zip { get; set; }
+        public string? from_state { get; set; }
+        public string? to_country { get; set; }
+        public string? to_zip { get; set; }
+        public string? to_state { get; set; }
+        public decimal amount { get; set; }
+        public decimal shipping { get; set; }
+        public IEnumerable<TaxOrderLineitem>? line_items { get; set; }
+        public string? exemption_type { get; set; } = "marketplace";
         public override string ToString()
         {
             var output = @$"
-From Country: {FromLocation?.Country}
-From Zip: {FromLocation?.Zip}
-From State: {FromLocation?.State}
-To Country: {ToLocation?.Country}
-To Zip: {ToLocation?.Zip}
-To State: {ToLocation?.State}
-Amount: {Amount}
-Shipping: {Shipping}
-Exemption Type: {ExemptionType}
+From Country: {from_country}
+From Zip: {from_zip}
+From State: {from_state}
+To Country: {to_country}
+To Zip: {to_zip}
+To State: {to_state}
+Amount: {amount}
+Shipping: {shipping}
+Exemption Type: {exemption_type}
 ";
             return output;
         }
     }
- }
+}

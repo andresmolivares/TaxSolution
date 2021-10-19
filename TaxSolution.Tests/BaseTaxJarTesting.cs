@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using TaxSolution.Server;
 
 namespace TaxSolution.Tests
 {
@@ -40,6 +41,11 @@ namespace TaxSolution.Tests
                 "Ref",
             }
             .ToList();
+        }
+
+        protected TaxJarConfiguration GetTaxConfig()
+        {
+            return new TaxJarConfiguration { Token = "5da2f821eee4035db4771edab942a4cc" };
         }
     }
 }

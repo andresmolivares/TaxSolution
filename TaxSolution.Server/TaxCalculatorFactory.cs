@@ -20,11 +20,11 @@ namespace TaxSolution.Server
         /// </requiement>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static ITaxCalculator GetCalculatorInstance(string key) => key.ToLower() switch
+        public static ITaxCalculator GetCalculatorInstance(string? key, TaxJarConfiguration taxConfig) => key?.ToLower() switch
         {
-            "http" => new TaxJarHttpClientCalculator(),
-            "ref" => new TaxJarReferenceCalculator(),
-            "web" => new TaxJarWebClientCalculator(),
+            "http" => new TaxJarHttpClientCalculator(taxConfig),
+            "ref" => new TaxJarReferenceCalculator(taxConfig),
+            "web" => new TaxJarWebClientCalculator(taxConfig),
             _ => throw new ArgumentException($"Invalid calculator key: {key}", nameof(key)),
         };
     }

@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
 
-namespace TaxSolution.Models
+namespace TaxSolution.Models.TaxOrder
 {
     /// <summary>
     /// Represents a tax order.
     /// </summary>
     public record TaxOrder
     {
-        public string from_country { get; set; }
-        public string from_zip { get; set; }
-        public string from_state { get; set; }
-        public string to_country { get; set; }
-        public string to_zip { get; set; }
-        public string to_state { get; set; }
+        public string? from_country { get; set; }
+        public string? from_zip { get; set; }
+        public string? from_state { get; set; }
+        public string? to_country { get; set; }
+        public string? to_zip { get; set; }
+        public string? to_state { get; set; }
         public decimal amount { get; set; }
         public decimal shipping { get; set; }
-        public IEnumerable<TaxOrderLineitem> line_items { get; set; }
-        public string exemption_type { get; set; } = "marketplace";
+        public IEnumerable<TaxOrderLineitem>? line_items { get; set; }
+        public string? exemption_type { get; set; } = "marketplace";
         public override string ToString()
         {
             var output = @$"

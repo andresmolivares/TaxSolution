@@ -3,10 +3,10 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
 
 namespace TaxSolution.Server
 {
@@ -14,10 +14,13 @@ namespace TaxSolution.Server
     /// Represnts and instance of a <see cref="ITaxCalculator"/> that uses an
     /// <see cref="HttpClient"/> request mechanism.
     /// </summary>
-    public class TaxJarHttpClientCalculator : ITaxCalculator
+    public class TaxJarHttpClientCalculator : TaxJarBaseClientCalculator, IGetServiceConnection<HttpClient>
     {
-        public TaxJarHttpClientCalculator()
+        private readonly TaxJarConfiguration _taxConfig;
+
+        public TaxJarHttpClientCalculator(TaxJarConfiguration taxConfig)
         {
+            _taxConfig = taxConfig;
             Console.WriteLine($"Instantiating {this.GetType()}");
             Console.WriteLine(Environment.NewLine);
         }
@@ -27,8 +30,12 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public async ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
+        public override async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token)
         {
+            if (location is null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
             // Process request
             var zip = location.Zip;
             var country = location.Country;
@@ -39,37 +46,26 @@ namespace TaxSolution.Server
             Console.WriteLine(s);
 
             // Deserialize response
-            var response = TaxJarHelper.DeserializeRateResponse(s);
+            var response = DeserializeRateResponse(s);
             
             // Return location rates
             var locationRate = new TaxLocationRate
             {
-                CityTax = response.CityRate,
-                CombinedTax = response.CombinedRate,
-                CountyTax = response.CountyRate,
-                CountryTax = response.CountryRate,
-                StateTax = response.StateRate
+                CityTax = response?.CityRate,
+                CombinedTax = response?.CombinedRate,
+                CountyTax = response?.CountyRate,
+                CountryTax = response?.CountryRate,
+                StateTax = response?.StateRate
             };
             return await Task.FromResult(locationRate);
         }
 
-        /// <summary>
-        /// Returns the tax amount for the specified order.
-        /// </summary>
-        /// <param name="order"></param>
-        /// <returns></returns>
-        public async ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
+        protected override async ValueTask<decimal> GetTaxAmountAsync(string? jsonData, CancellationToken token)
         {
-            // Find and return order data response
-            var jsonOrder = JsonSerializer.Serialize(order);
-            var orderResponse = TaxJarHelper.ValidateOrderResponse(jsonOrder);
-            Console.WriteLine($"Validated Order from order request: {orderResponse}");
-
-            return await GetTaxAmountAsync(orderResponse, token);
-        }
-
-        private async ValueTask<decimal> GetTaxAmountAsync(string jsonData, CancellationToken token)
-        {
+            if (jsonData is null)
+            {
+                throw new ArgumentNullException(nameof(jsonData));
+            }
             // Post order for tax amount
             var httpContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
             var uri = @"https://api.taxjar.com/v2/taxes";
@@ -77,7 +73,7 @@ namespace TaxSolution.Server
 
             // Process result and return tax amount
             var jsonResult = JObject.Parse(result.ToString());
-            var amountValue = jsonResult.SelectToken("$.tax.amount_to_collect").ToString();
+            var amountValue = jsonResult?.SelectToken("$.tax.amount_to_collect")?.ToString();
             return decimal.TryParse(amountValue, out var amount)
                 ? await Task.FromResult(amount)
                 : throw new Exception($"Could not process rate value response: {amountValue}");
@@ -88,7 +84,7 @@ namespace TaxSolution.Server
             // Process request and return content result
             using var hc = GetServiceConnection();
             var response = await hc.GetAsync(uri, token);
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
         }
 
         private async ValueTask<string> PostDataFromHttpClient(string uri, HttpContent payload, CancellationToken token)
@@ -98,16 +94,16 @@ namespace TaxSolution.Server
                 throw new Exception("HttpContent payload cannot be null.");
             using var hc = GetServiceConnection();
             var response = await hc.PostAsync(uri, payload, token);
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
         }
 
-        private HttpClient GetServiceConnection()
+        public virtual HttpClient GetServiceConnection()
         {
             // Initialize client connection
             var hc = new HttpClient();
-            var TOKEN = TaxJarHelper.GetToken();
+            var token = _taxConfig.Token; // TaxServiceConfiguration.GetToken();
             hc.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", TOKEN);
+                new AuthenticationHeaderValue("Bearer", token);
             hc.DefaultRequestHeaders.Add("x-api-version", "2020-08-07");
             return hc;
         }

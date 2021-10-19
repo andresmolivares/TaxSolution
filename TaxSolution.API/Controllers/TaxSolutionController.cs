@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
+using TaxSolution.Models.TaxOrder;
 using TaxSolution.Server;
 
 namespace TaxSolution.API.Controllers
@@ -19,11 +22,18 @@ namespace TaxSolution.API.Controllers
     [ApiController]
     public class TaxSolutionController : ControllerBase
     {
-        private ITaxCalculator calculator;
+        private readonly TaxJarConfiguration _taxConfig;
 
-        private void GetCalculator(string key)
+        private ITaxCalculator? calculator;
+
+        public TaxSolutionController(IOptionsMonitor<TaxJarConfiguration> taxConfig)
         {
-            calculator = TaxCalculatorFactory.GetCalculatorInstance(key);
+            _taxConfig = taxConfig.CurrentValue;
+        }
+
+        private void GetCalculator(string? key)
+        {
+            calculator = TaxCalculatorFactory.GetCalculatorInstance(key, _taxConfig);
         }
 
         /// <summary>
@@ -32,12 +42,16 @@ namespace TaxSolution.API.Controllers
         /// <param name="taxLocation"></param>
         /// <returns></returns>
         [HttpPost()]
-        public async ValueTask<ActionResult<TaxLocationRate>> PostAsync(TaxLocationRequest request, CancellationToken token)
+        public async ValueTask<ActionResult<TaxLocationRate?>> PostAsync(TaxLocationRequest? request, CancellationToken token)
         {
             try
             {
-                GetCalculator(request.CalcKey);
-                return await calculator.GetTaxRateByLocationAsync(request.Location, token);
+                GetCalculator(request?.CalcKey);
+                if (calculator is null)
+                {
+                    throw new ApplicationException($"{nameof(calculator)} was not properly initialized.");
+                }
+                return await calculator.GetTaxRateByLocationAsync(request?.Location, token);
             }
             catch (TaskCanceledException tce)
             {
@@ -52,12 +66,16 @@ namespace TaxSolution.API.Controllers
         /// <param name="order"></param>
         /// <returns></returns>
         [HttpPut()]
-        public async ValueTask<ActionResult<decimal>> PutAsync(TaxOrderRequest request, CancellationToken token)
+        public async ValueTask<ActionResult<decimal?>> PutAsync(TaxOrderRequest? request, CancellationToken token)
         {
             try
             {
-                GetCalculator(request.CalcKey);
-                return await calculator.GetTaxForOrderRequestAsync(request.Order, token);
+                GetCalculator(request?.CalcKey);
+                if (calculator is null)
+                {
+                    throw new ApplicationException($"{nameof(calculator)} was not properly initialized.");
+                }
+                return await calculator.GetTaxForOrderRequestAsync(request?.Order, token);
             }
             catch (TaskCanceledException tce)
             {

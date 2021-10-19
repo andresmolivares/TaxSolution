@@ -3,7 +3,8 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
+using TaxSolution.Models.TaxOrder;
 
 namespace TaxSolution.Client
 {
@@ -17,7 +18,7 @@ namespace TaxSolution.Client
         /// </summary>
         /// <param name="locationRequest"></param>
         /// <returns></returns>
-        public async ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocationRequest locationRequest)
+        public async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocationRequest? locationRequest)
         {
             // Initialize service request
             var uri = @"http://localhost:6700/api/taxsolution";
@@ -27,7 +28,7 @@ namespace TaxSolution.Client
             // Process, deserialize and return response
             var results = await PostDataFromHttpClient(uri, httpContent);
             var taxLocationRate = JsonConvert.DeserializeObject<TaxLocationRate>(results);
-            return await Task.FromResult(taxLocationRate);
+            return taxLocationRate;
         }
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace TaxSolution.Client
         /// </summary>
         /// <param name="orderId"></param>
         /// <returns></returns>
-        public async ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrderRequest orderRequest)
+        public async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrderRequest? orderRequest)
         {
             // Initialize service request
             var uri = @"http://localhost:6700/api/taxsolution";
@@ -45,7 +46,7 @@ namespace TaxSolution.Client
             // Process, deserialize and return response
             var results = await PutDataFromHttpClient(uri, httpContent);
             return decimal.TryParse(results, out var taxAmount)
-               ? await Task.FromResult(taxAmount)
+               ? taxAmount
                : throw new Exception("Error occurred parsing tax amount.");
         }
 

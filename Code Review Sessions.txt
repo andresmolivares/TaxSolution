@@ -1,0 +1,8 @@
+2021.10.12
+Refactor helpers to either live intrinsicly within the code or an alternative towards centralization - Complete
+Core model types should only contain essential definition - Pending
+Clean up exception handling - In Progress
+Fix mappings - Adopt standard property naming convention; i.e. TaxOrder - Pending
+Implement configuration in Server project - Complete
+
+2021.10.19

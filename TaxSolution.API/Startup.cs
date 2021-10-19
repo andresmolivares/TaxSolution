@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using TaxSolution.Server;
 
 namespace TaxSolution.API
 {
@@ -27,6 +28,7 @@ namespace TaxSolution.API
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<TaxJarConfiguration>(Configuration.GetSection("TaxConfig"));
             // Register server resources
             services.AddControllers();
             services.AddSwaggerGen(c =>

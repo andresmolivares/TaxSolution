@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Taxjar;
 using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
+using TaxSolution.Models.TaxOrder;
 
 namespace TaxSolution.Server
 {
@@ -12,8 +14,11 @@ namespace TaxSolution.Server
     /// </summary>
     public class TaxJarReferenceCalculator : ITaxCalculator
     {
-        public TaxJarReferenceCalculator()
+        private readonly TaxJarConfiguration _taxConfig;
+
+        public TaxJarReferenceCalculator(TaxJarConfiguration taxConfig)
         {
+            _taxConfig = taxConfig;
             Console.WriteLine($"Instantiating {this.GetType()}");
             Console.WriteLine(Environment.NewLine);
         }
@@ -23,8 +28,12 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public async ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token)
+        public async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token)
         {
+            if (location is null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
             // Process request
             var client = GetServiceConnection();
             // NOTE: Why does RatesForLocationAsync not support CancellationToken?
@@ -49,12 +58,16 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public async ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token)
+        public async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrder? order, CancellationToken token)
         {
+            if (order is null)
+            {
+                throw new ArgumentNullException(nameof(order));
+            }
             // Get service ref and call API
             var client = GetServiceConnection();
             // Transform order request
-            var orderRequest = TaxJarHelper.ConvertToOrderResponse(order);
+            var orderRequest = order.AsOrderResponseAttributes();
             // NOTE: Why does TaxForOrderAsync not support CancellationToken?
             var taxResponse = await client.TaxForOrderAsync(orderRequest);
             // Get calculated order tax rate
@@ -63,7 +76,8 @@ namespace TaxSolution.Server
 
         private TaxjarApi GetServiceConnection()
         {
-            return new TaxjarApi(TaxJarHelper.GetToken());
+            //return new TaxjarApi(TaxServiceConfiguration.GetToken());
+            return new TaxjarApi(_taxConfig.Token);
         }
     }
 

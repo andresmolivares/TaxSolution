@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
+using TaxSolution.Models.TaxOrder;
 
 namespace TaxSolution.Client
 {
@@ -62,7 +63,7 @@ namespace TaxSolution.Client
         async Task RequestTaxforOrderRequestAsync(string calcKey)
         {
             // Create request
-            var orderRequest = TaxOrderRequestHelper.GetSimulatedTaxOrderRequest(calcKey);
+            var orderRequest = TaxOrderRequestSimluator.GetSimulatedTaxOrderRequest(calcKey);
 
             try
             {

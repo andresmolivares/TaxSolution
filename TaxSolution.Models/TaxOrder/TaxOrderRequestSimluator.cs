@@ -1,17 +1,17 @@
 ﻿using System.Linq;
 
-namespace TaxSolution.Models
+namespace TaxSolution.Models.TaxOrder
 {
     /// <summary>
     /// Represents a helper class to generate tax order requests.
     /// </summary>
-    public static class TaxOrderRequestHelper
+    public static class TaxOrderRequestSimluator
     {
         /// <summary>
         /// Returns a simulated tax order request.
         /// </summary>
         /// <returns></returns>
-        public static TaxOrderRequest GetSimulatedTaxOrderRequest(string calcKey)
+        public static TaxOrderRequest? GetSimulatedTaxOrderRequest(string? calcKey)
         {
             var order = new TaxOrder
             {

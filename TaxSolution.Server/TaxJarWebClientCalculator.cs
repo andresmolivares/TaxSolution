@@ -17,6 +17,7 @@ namespace TaxSolution.Server
     public class TaxJarWebClientCalculator : TaxJarBaseClientCalculator, IGetServiceConnection<WebClient>
     {
         private readonly TaxJarConfiguration _taxConfig;
+
         public TaxJarWebClientCalculator(TaxJarConfiguration taxConfig)
         {
             _taxConfig = taxConfig;
@@ -60,6 +61,12 @@ namespace TaxSolution.Server
             return await Task.FromResult(locationRate);
         }
 
+        /// <summary>
+        /// Gets tax amount from the provided Json data.
+        /// </summary>
+        /// <param name="jsonData"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         protected override async ValueTask<decimal> GetTaxAmountAsync(string? jsonData, CancellationToken token)
         {
             try
@@ -131,6 +138,10 @@ namespace TaxSolution.Server
             return payload.Replace("'", "\"");
         }
 
+        /// <summary>
+        /// Gets the client service connection
+        /// </summary>
+        /// <returns></returns>
         public virtual WebClient GetServiceConnection()
         {
             // Initialize client connection

@@ -20,7 +20,8 @@ namespace TaxSolution.Server
         /// </requiement>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static ITaxCalculator GetCalculatorInstance(string? key, TaxJarConfiguration taxConfig) => key?.ToLower() switch
+        public static ITaxCalculator GetCalculatorInstance(string? key, TaxJarConfiguration taxConfig) => 
+            key?.ToLower() switch
         {
             "http" => new TaxJarHttpClientCalculator(taxConfig),
             "ref" => new TaxJarReferenceCalculator(taxConfig),

@@ -60,6 +60,12 @@ namespace TaxSolution.Server
             return await Task.FromResult(locationRate);
         }
 
+        /// <summary>
+        /// Gets tax amount from the provided Json data.
+        /// </summary>
+        /// <param name="jsonData"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         protected override async ValueTask<decimal> GetTaxAmountAsync(string? jsonData, CancellationToken token)
         {
             if (jsonData is null)
@@ -97,6 +103,10 @@ namespace TaxSolution.Server
             return await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Gets the client service connection
+        /// </summary>
+        /// <returns></returns>
         public virtual HttpClient GetServiceConnection()
         {
             // Initialize client connection

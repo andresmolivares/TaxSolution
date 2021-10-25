@@ -7,9 +7,9 @@ namespace TaxSolution.Server
     /// </summary>
     public class TaxJarConfiguration
     {
-       /// <summary>
-       /// Gets and sets the token
-       /// </summary>
+        /// <summary>
+        /// Gets and sets the token
+        /// </summary>
         public string? Token { get; set; }
     }
 }

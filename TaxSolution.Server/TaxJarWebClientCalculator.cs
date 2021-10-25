@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -17,12 +18,14 @@ namespace TaxSolution.Server
     public class TaxJarWebClientCalculator : TaxJarBaseClientCalculator, IGetServiceConnection<WebClient>
     {
         private readonly TaxJarConfiguration _taxConfig;
+        private readonly ILogger _logger;
 
-        public TaxJarWebClientCalculator(TaxJarConfiguration taxConfig)
+        public TaxJarWebClientCalculator(TaxJarConfiguration taxConfig,
+            ILogger logger)
         {
             _taxConfig = taxConfig;
-            Console.WriteLine($"Instantiating {this.GetType()}");
-            Console.WriteLine(Environment.NewLine);
+            _logger = logger;
+            logger.LogInformation($"Instantiating {this.GetType()}");
         }
 
         /// <summary>
@@ -76,7 +79,11 @@ namespace TaxSolution.Server
                 HttpWebRequest http = InitializeWebRequest(uri);
 
                 // Format order payload
-                var formattedJson = FormatResponse(jsonData);
+                var formattedJson = jsonData?.Replace("'", "\"");
+                if (formattedJson is null)
+                {
+                    throw new InvalidOperationException("Cannot read tax amount data.");
+                }
 
                 // Transform into stream
                 byte[] bytes = new ASCIIEncoding().GetBytes(formattedJson);
@@ -116,28 +123,6 @@ namespace TaxSolution.Server
             return request;
         }
 
-        private string FormatResponse(string? response)
-        {
-            if (response is null)
-            {
-                throw new ArgumentNullException(nameof(response));
-            }
-            // Verify that the order response contains valid json data
-            var jsonResponse = JObject.Parse(response);
-            var payload = @"{
-  'from_country': '" + jsonResponse.SelectToken("$.from_country")?.ToString() + @"',
-  'from_zip': '" + jsonResponse.SelectToken("$.from_zip")?.ToString() + @"',
-  'from_state': '" + jsonResponse.SelectToken("$.from_state")?.ToString() + @"',
-  'to_country': '" + jsonResponse.SelectToken("$.to_country")?.ToString() + @"',
-  'to_zip': '" + jsonResponse.SelectToken("$.to_zip")?.ToString() + @"',
-  'to_state': '" + jsonResponse.SelectToken("$.to_state")?.ToString() + @"',
-  'amount': " + jsonResponse.SelectToken("$.amount")?.ToString() + @",
-  'shipping': " + jsonResponse.SelectToken("$.shipping")?.ToString() + @",
-  'line_items': " + jsonResponse.SelectToken("$.line_items") + @"
-}";
-            return payload.Replace("'", "\"");
-        }
-
         /// <summary>
         /// Gets the client service connection
         /// </summary>
@@ -146,7 +131,7 @@ namespace TaxSolution.Server
         {
             // Initialize client connection
             var wc = new WebClient();
-            var token = _taxConfig.Token; // TaxServiceConfiguration.GetToken();
+            var token = _taxConfig.Token;
             wc.Headers.Add("Authorization", $"Bearer {token}");
             wc.Headers.Add("x-api-version", "2020-08-07");
             return wc;

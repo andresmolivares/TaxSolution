@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using TaxSolution.Server;
@@ -43,9 +46,17 @@ namespace TaxSolution.Tests
             .ToList();
         }
 
-        protected TaxJarConfiguration GetTaxConfig()
+        protected virtual TaxJarConfiguration GetTaxConfig()
         {
             return new TaxJarConfiguration { Token = "5da2f821eee4035db4771edab942a4cc" };
+        }
+
+        protected virtual ITaxCalculatorFactory GetMockFactory()
+        {
+            var configInstance = GetTaxConfig();
+            var configMock = new Mock<IOptionsMonitor<TaxJarConfiguration>>();
+            configMock.Setup(o => o.CurrentValue).Returns(configInstance);
+            return new TaxCalculatorFactory(configMock.Object, Mock.Of<ILogger>());
         }
     }
 }

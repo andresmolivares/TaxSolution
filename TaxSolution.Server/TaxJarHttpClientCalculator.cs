@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -17,12 +19,14 @@ namespace TaxSolution.Server
     public class TaxJarHttpClientCalculator : TaxJarBaseClientCalculator, IGetServiceConnection<HttpClient>
     {
         private readonly TaxJarConfiguration _taxConfig;
+        private readonly ILogger _logger;
 
-        public TaxJarHttpClientCalculator(TaxJarConfiguration taxConfig)
+        public TaxJarHttpClientCalculator(TaxJarConfiguration taxConfig,
+            ILogger logger)
         {
             _taxConfig = taxConfig;
-            Console.WriteLine($"Instantiating {this.GetType()}");
-            Console.WriteLine(Environment.NewLine);
+            _logger = logger;
+            logger.LogInformation($"Instantiating {this.GetType()}");
         }
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public override async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token)
+        public override async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync([Required]TaxLocation location, CancellationToken token)
         {
             if (location is null)
             {
@@ -73,7 +77,8 @@ namespace TaxSolution.Server
                 throw new ArgumentNullException(nameof(jsonData));
             }
             // Post order for tax amount
-            var httpContent = new StringContent(jsonData, Encoding.UTF8, "application/json");
+            var payload = jsonData.Replace("'", "\"");
+            var httpContent = new StringContent(payload, Encoding.UTF8, "application/json");
             var uri = @"https://api.taxjar.com/v2/taxes";
             var result = await PostDataFromHttpClient(uri, httpContent, token);
 
@@ -111,7 +116,7 @@ namespace TaxSolution.Server
         {
             // Initialize client connection
             var hc = new HttpClient();
-            var token = _taxConfig.Token; // TaxServiceConfiguration.GetToken();
+            var token = _taxConfig.Token;
             hc.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
             hc.DefaultRequestHeaders.Add("x-api-version", "2020-08-07");

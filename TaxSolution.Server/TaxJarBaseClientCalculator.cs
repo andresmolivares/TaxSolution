@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,17 +18,16 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public abstract ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token);
+        public abstract ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync([Required] TaxLocation location, CancellationToken token);
 
         /// <summary>
         /// Returns the tax amount for the specified order.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public virtual async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrder? order, CancellationToken token)
+        public virtual async ValueTask<decimal?> GetTaxForOrderRequestAsync([Required] TaxOrder order, CancellationToken token)
         {
-            var jsonOrder = JsonSerializer.Serialize(order);
-            var orderResponse = ValidateOrderResponse(jsonOrder);
+            var orderResponse = ValidateOrderResponse(order);
             Console.WriteLine($"Validated Order from order request: {orderResponse}");
 
             return await GetTaxAmountAsync(orderResponse, token);
@@ -52,60 +52,26 @@ namespace TaxSolution.Server
         /// <param name="orderResponse"></param>
         /// <returns></returns>
         /// 
-        protected string? ValidateOrderResponse(string? orderResponse)
+        protected string? ValidateOrderResponse(TaxOrder? order)
         {
-            if (orderResponse is null)
-            {
-                throw new ArgumentNullException(nameof(orderResponse));
-            }
+            order?.Validate();
             try
             {
-                // Validate shipping and amount value
-                var parsedOrder = JObject.Parse(orderResponse).SelectToken("order")?.ToString();
-                var rootNode = parsedOrder ?? orderResponse;
-                var validatedJson = JObject.Parse(rootNode);
-                var shippingValue = validatedJson["shipping"]?.ToString();
-                validatedJson["shipping"] = decimal.TryParse(shippingValue, out var shipping)
-                    ? shipping
-                    : shippingValue;
-                var amountValue = validatedJson["amount"]?.ToString();
-                validatedJson["amount"] = decimal.TryParse(amountValue, out var amount)
-                    ? amount
-                    : amountValue;
-                // Apply exemption type
-                var exemptionTypeValue = validatedJson["exemption_type"]?.ToString();
-                validatedJson["exemption_type"] = !string.IsNullOrWhiteSpace(exemptionTypeValue)
-                    ? exemptionTypeValue
-                    : "marketplace";
-                // Validate both state and zip values
-                if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"]?.ToString())
-                    && !string.IsNullOrWhiteSpace(validatedJson["to_state"]?.ToString())
-                    && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString())
-                    && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
-                {
-                    validatedJson["from_zip"] = validatedJson["to_zip"]?.ToString();
-                    validatedJson["from_state"] = validatedJson["to_state"]?.ToString();
-                }
-                // Validate zip value
-                if (!string.IsNullOrWhiteSpace(validatedJson["to_zip"]?.ToString())
-                    && string.IsNullOrWhiteSpace(validatedJson["from_zip"]?.ToString()))
-                {
-                    validatedJson["from_zip"] = validatedJson["to_zip"]?.ToString();
-                }
-                // Validate state value
-                if (!string.IsNullOrWhiteSpace(validatedJson["to_state"]?.ToString())
-                    && string.IsNullOrWhiteSpace(validatedJson["from_state"]?.ToString()))
-                {
-                    validatedJson["from_state"] = validatedJson["to_state"]?.ToString();
-                }
-                // Validate country value
-                if (!string.IsNullOrWhiteSpace(validatedJson["to_country"]?.ToString())
-                    && string.IsNullOrWhiteSpace(validatedJson["from_country"]?.ToString()))
-                {
-                    validatedJson["from_country"] = validatedJson["to_country"]?.ToString();
-                }
-                // Return the serialize validated json order
-                return Newtonsoft.Json.JsonConvert.SerializeObject(validatedJson, Newtonsoft.Json.Formatting.Indented);
+                var result = @"
+{
+    'shipping': " + order?.Shipping + @",
+    'amount': " + order?.Amount + @",
+    'exemption_type': '" + order?.ExemptionType + @"',
+    'to_zip': '" + order?.ToLocation?.Zip + @"',
+    'to_state': '" + order?.ToLocation?.State + @"',
+    'to_country': '" + order?.ToLocation?.Country + @"',
+    'from_zip': '" + order?.FromLocation?.Zip + @"',
+    'from_state': '" + order?.FromLocation?.State + @"',
+    'from_country': '" + order?.FromLocation?.Country + @"',
+    'line_items': " + Newtonsoft.Json.JsonConvert.SerializeObject(order?.LineItems) + @"
+}";
+
+                return result;
             }
             catch (Exception e)
             {

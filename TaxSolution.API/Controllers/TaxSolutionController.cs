@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using TaxSolution.Models;
@@ -22,40 +23,57 @@ namespace TaxSolution.API.Controllers
     [ApiController]
     public class TaxSolutionController : ControllerBase
     {
-        private readonly TaxJarConfiguration _taxConfig;
+        private readonly ITaxCalculatorFactory _factory;
+        private readonly ILogger _logger;
 
-        private ITaxCalculator? calculator;
-
-        public TaxSolutionController(IOptionsMonitor<TaxJarConfiguration> taxConfig)
+        public TaxSolutionController(ITaxCalculatorFactory factory, 
+            ILogger logger)
         {
-            _taxConfig = taxConfig.CurrentValue;
+            _factory = factory;
+            _logger = logger;
         }
 
-        private void GetCalculator(string? key)
+        private ITaxCalculator GetCalculator(string? key)
         {
-            calculator = TaxCalculatorFactory.GetCalculatorInstance(key, _taxConfig);
+            return _factory.GetCalculatorInstance(key);
         }
 
         /// <summary>
         /// Returns the tax rate for the specified location.
         /// </summary>
-        /// <param name="taxLocation"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="TaskCanceledException"></exception>
         /// <returns></returns>
         [HttpPost()]
-        public async ValueTask<ActionResult<TaxLocationRate?>> PostAsync(TaxLocationRequest? request, CancellationToken token)
+        public async ValueTask<ActionResult<TaxLocationRate?>> PostAsync([Required]TaxLocationRequest request, CancellationToken token)
         {
+            if (request is null || request.Location is null)
+            {
+                var error = $"{nameof(request)} parameter or its Location cannot be null.";
+                _logger.LogError(error);
+                throw new ArgumentNullException(nameof(request));
+            }
             try
             {
-                GetCalculator(request?.CalcKey);
+                var calculator = GetCalculator(request.CalcKey);
                 if (calculator is null)
                 {
-                    throw new ApplicationException($"{nameof(calculator)} was not properly initialized.");
+                    var error = $"{nameof(calculator)} was not properly initialized.";
+                    _logger.LogError(error);
+                    throw new InvalidOperationException(error);
                 }
-                return await calculator.GetTaxRateByLocationAsync(request?.Location, token);
+                var result = await calculator.GetTaxRateByLocationAsync(request.Location, token).ConfigureAwait(false);
+                return Ok(result);
             }
             catch (TaskCanceledException tce)
             {
-                Console.WriteLine($"Post execution cancelled: {tce.Message}");
+                _logger.LogError($"Post execution cancelled: {tce.Message}");
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Post execution exception occurred: {e.Message}");
                 throw;
             }
         }
@@ -63,25 +81,42 @@ namespace TaxSolution.API.Controllers
         /// <summary>
         /// Returns the tax amount for the specified order.
         /// </summary>
-        /// <param name="order"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="TaskCanceledException"></exception>
         /// <returns></returns>
         [HttpPut()]
-        public async ValueTask<ActionResult<decimal?>> PutAsync(TaxOrderRequest? request, CancellationToken token)
+        public async ValueTask<ActionResult<decimal?>> PutAsync([Required] TaxOrderRequest request, CancellationToken token)
         {
+            if (request is null || request.Order is null)
+            {
+                var error = $"{nameof(request)} parameter or its Order cannot be null.";
+                _logger.LogError(error);
+                throw new ArgumentNullException(nameof(request));
+            }
             try
             {
-                GetCalculator(request?.CalcKey);
+                var calculator = GetCalculator(request.CalcKey);
                 if (calculator is null)
                 {
-                    throw new ApplicationException($"{nameof(calculator)} was not properly initialized.");
+                    var error = $"{nameof(calculator)} was not properly initialized.";
+                    _logger.LogError(error);
+                    throw new InvalidOperationException(error);
                 }
-                return await calculator.GetTaxForOrderRequestAsync(request?.Order, token);
+                var result = await calculator.GetTaxForOrderRequestAsync(request.Order, token).ConfigureAwait(false);
+                return Ok(result);
             }
             catch (TaskCanceledException tce)
             {
-                Console.WriteLine($"Put execution cancelled: {tce.Message}");
+                _logger.LogError($"Put execution cancelled: {tce.Message}");
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Put execution exception occurred: {e.Message}");
                 throw;
             }
         }
     }
 }
+

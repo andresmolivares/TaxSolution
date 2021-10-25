@@ -18,16 +18,16 @@ namespace TaxSolution.Server
             {
                 return new OrderResponseAttributes
                 {
-                    ExemptionType = orderRequest.exemption_type,
-                    Amount = orderRequest.amount,
-                    Shipping = orderRequest.shipping,
-                    FromCountry = orderRequest.from_country,
-                    FromState = orderRequest.from_state,
-                    FromZip = orderRequest.from_zip,
-                    ToCountry = orderRequest.to_country,
-                    ToState = orderRequest.to_state,
-                    ToZip = orderRequest.to_zip,
-                    LineItems = orderRequest.line_items?.Select(li =>
+                    ExemptionType = orderRequest.ExemptionType,
+                    Amount = orderRequest.Amount,
+                    Shipping = orderRequest.Shipping,
+                    FromCountry = orderRequest.FromLocation?.Country,
+                    FromState = orderRequest.FromLocation?.State,
+                    FromZip = orderRequest.FromLocation?.Zip,
+                    ToCountry = orderRequest.ToLocation?.Country,
+                    ToState = orderRequest.ToLocation?.State,
+                    ToZip = orderRequest.ToLocation?.Zip,
+                    LineItems = orderRequest.LineItems?.Select(li =>
                     {
                         return new LineItem
                         {

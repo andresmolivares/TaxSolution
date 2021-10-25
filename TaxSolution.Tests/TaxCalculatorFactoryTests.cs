@@ -8,11 +8,19 @@ namespace TaxSolution.Tests
 {
     public class TaxCalculatorFactoryTests : BaseTaxJarTesting
     {
+        protected override ITaxCalculatorFactory GetMockFactory()
+        {
+            var factory = base.GetMockFactory();
+            Assert.IsInstanceOf<ITaxCalculatorFactory>(factory);
+            return factory;
+        }
+
         [TestCaseSource(nameof(LoadCalcKeyTestCases))]
         [Test]
         public async Task InstantiateCalculatorTest(string key)
         {
-            var calculator = TaxCalculatorFactory.GetCalculatorInstance(key, GetTaxConfig());
+            var _taxCalculatorFactory = GetMockFactory();
+            var calculator = _taxCalculatorFactory?.GetCalculatorInstance(key);
             Assert.IsInstanceOf<ITaxCalculator>(calculator);
             await Task.Yield();
         }
@@ -20,10 +28,11 @@ namespace TaxSolution.Tests
         [Test]
         public async Task InstantiateInvalidCalculatorTest()
         {
-            Assert.Throws<ArgumentException>(() =>
+            var invalidKey = "invalid";
+            Assert.Throws<InvalidOperationException>(() =>
             {
-                var key = "invalid";
-                var calculator = TaxCalculatorFactory.GetCalculatorInstance(key, GetTaxConfig());
+                var _taxCalculatorFactory = GetMockFactory();
+                var calculator = _taxCalculatorFactory?.GetCalculatorInstance(invalidKey);
             });
             await Task.Yield();
         }

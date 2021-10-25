@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Taxjar;
@@ -12,15 +14,17 @@ namespace TaxSolution.Server
     /// Represnts and instance of a <see cref="ITaxCalculator"/> that uses an
     /// <see cref="TaxjarApi"/> client service reference request mechanism.
     /// </summary>
-    public class TaxJarReferenceCalculator : ITaxCalculator
+    public class TaxJarReferenceCalculator : ITaxCalculator, IGetServiceConnection<TaxjarApi>
     {
         private readonly TaxJarConfiguration _taxConfig;
+        private readonly ILogger _logger;
 
-        public TaxJarReferenceCalculator(TaxJarConfiguration taxConfig)
+        public TaxJarReferenceCalculator(TaxJarConfiguration taxConfig,
+            ILogger logger)
         {
             _taxConfig = taxConfig;
-            Console.WriteLine($"Instantiating {this.GetType()}");
-            Console.WriteLine(Environment.NewLine);
+            _logger = logger;
+            logger.LogInformation($"Instantiating {this.GetType()}");
         }
 
         /// <summary>
@@ -28,7 +32,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        public async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync(TaxLocation? location, CancellationToken token)
+        public async ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync([Required] TaxLocation location, CancellationToken token)
         {
             if (location is null)
             {
@@ -58,7 +62,7 @@ namespace TaxSolution.Server
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        public async ValueTask<decimal?> GetTaxForOrderRequestAsync(TaxOrder? order, CancellationToken token)
+        public async ValueTask<decimal?> GetTaxForOrderRequestAsync([Required] TaxOrder order, CancellationToken token)
         {
             if (order is null)
             {
@@ -74,9 +78,8 @@ namespace TaxSolution.Server
             return await Task.FromResult(taxResponse.AmountToCollect);
         }
 
-        private TaxjarApi GetServiceConnection()
+        public TaxjarApi GetServiceConnection()
         {
-            //return new TaxjarApi(TaxServiceConfiguration.GetToken());
             return new TaxjarApi(_taxConfig.Token);
         }
     }

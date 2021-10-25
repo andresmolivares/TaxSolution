@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using TaxSolution.Models;
 using TaxSolution.Models.TaxLocation;
 using TaxSolution.Models.TaxOrder;
-using TaxSolution.Server;
 
 namespace TaxSolution.Tests
 {
@@ -16,7 +15,8 @@ namespace TaxSolution.Tests
         [SetUp]
         public void Setup()
         {
-            _calculator = TaxCalculatorFactory.GetCalculatorInstance("http", GetTaxConfig());
+            var factory = GetMockFactory();
+            _calculator = factory.GetCalculatorInstance("http");
             Assert.IsInstanceOf<ITaxCalculator>(_calculator);
         }
 
@@ -48,7 +48,7 @@ namespace TaxSolution.Tests
         public async Task GetTaxForOrderRequestTest()
         {
             const string key = "http";
-            var request = TaxOrderRequestSimluator.GetSimulatedTaxOrderRequest(key);
+            
             if (_calculator is null)
             {
                 Assert.Fail($"{nameof(_calculator)} cannot be null for the {nameof(GetTaxForOrderRequestTest)} test.");
@@ -56,10 +56,19 @@ namespace TaxSolution.Tests
             }
             else
             {
-                var orderTax = await _calculator.GetTaxForOrderRequestAsync(request?.Order, CancellationToken.None).ConfigureAwait(false);
-                Assert.IsNotNull(orderTax);
-                Console.WriteLine($"Order tax for order request is {orderTax}");
-                Assert.IsTrue(orderTax >= 0.0M);
+                var request = TaxOrderRequestSimluator.GetSimulatedTaxOrderRequest(key);
+                if (request is null || request.Order is null)
+                {
+                    Assert.Fail($"{nameof(request)} or its Order cannot be null for the {nameof(GetTaxForOrderRequestTest)} test.");
+                    Assert.IsNotNull(_calculator);
+                }
+                else
+                {
+                    var orderTax = await _calculator.GetTaxForOrderRequestAsync(request.Order, CancellationToken.None).ConfigureAwait(false);
+                    Assert.IsNotNull(orderTax);
+                    Console.WriteLine($"Order tax for order request is {orderTax}");
+                    Assert.IsTrue(orderTax >= 0.0M);
+                }
             }
             await Task.Yield();
         }

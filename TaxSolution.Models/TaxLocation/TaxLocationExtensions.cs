@@ -8,10 +8,12 @@ namespace TaxSolution.Models.TaxLocation
         public static bool CheckZipCodeIsValid(this TaxLocation owner)
         {
             var zip = owner?.Zip;
-            if (zip is null)
-                throw new NullReferenceException("Could not access zip code on invalid tax location value.");
-            // TODO: Add zip and country validation
-            return zip.ToCharArray().Any(c => char.IsDigit(c));
+            var valid = !string.IsNullOrWhiteSpace(zip)
+                && zip.Replace("-", "").ToCharArray().All(c => char.IsDigit(c))
+                && (zip.Replace("-", "").Length == 5 || zip.Replace("-", "").Length == 9);
+            if (!valid)
+                throw new InvalidOperationException("The zip code provided was in valid.");
+            return valid;
         }
     }
 }

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using TaxSolution.Server;
 
 namespace TaxSolution.API
 {
@@ -27,12 +29,31 @@ namespace TaxSolution.API
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // Set up logging configuration
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
+                loggingBuilder.AddSimpleConsole(options =>
+                {
+                    options.IncludeScopes = true;
+                    options.SingleLine = true;
+                    options.TimestampFormat = "hh:mm:ss ";
+                    options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Disabled;
+                });
+                loggingBuilder.AddDebug();
+            });
+            // Adsd default logger
+            services.AddSingleton(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger("DefaultLogger"));
             // Register server resources
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaxSolution.API", Version = "v1" });
             });
+
+            // Configure TaxJar settings
+            services.Configure<TaxJarConfiguration>(Configuration.GetSection("TaxConfig"));
+            services.AddSingleton<ITaxCalculatorFactory, TaxCalculatorFactory>();
         }
 
         /// <summary>

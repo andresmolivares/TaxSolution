@@ -16,9 +16,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Requirements", "Requirements", "{BF008C23-F73B-4ADA-BD5C-09A0BD7225EE}"
 	ProjectSection(SolutionItems) = preProject
 		Requirements\Backend Developer Code Test (1).docx = Requirements\Backend Developer Code Test (1).docx
+		Code Review Sessions.txt = Code Review Sessions.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaxSolution.Desktop", "TaxSolution.Desktop\TaxSolution.Desktop.csproj", "{5FC6EB0C-D6FE-45D0-B8AE-B97939492EB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxSolution.Desktop", "TaxSolution.Desktop\TaxSolution.Desktop.csproj", "{5FC6EB0C-D6FE-45D0-B8AE-B97939492EB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

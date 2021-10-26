@@ -1,0 +1,39 @@
+2021.10.12
+Refactor helpers to either live intrinsicly within the code or an alternative towards centralization - Complete
+Core model types should only contain essential definition - Complete - TaxLocation and TaxOrder are first class core domain types
+Fix mappings - Adopt standard property naming convention - Complete - reduced transformation to central location
+Implement configuration in Server project - Complete
+
+2021.10.19
+Change factory to not be static, pass config to factory - Complete
+Look into HttpClientFactory - For minor role decided not to overcomplicate
+
+Exception handling
+	Fail fast - Complete - Added up front failure
+	Throw granular exceptions not broad types; or create custom exceptions for specific cases - In Progress
+	Clean up exception handling - In Progress
+	Discuss approaches for clear exception handling....handle it when bubbled up to the highest level - In Progress
+
+Implement ILogger - Pending
+
+Server
+Client 
+Transient
+
+Catch
+Log
+Action => determine type
+Report up with type and context
+Throw generically with context
+
+
+Functional Programming 
+
+Structures and interpretation of Computer Programs
+	Monads
+	Category Theory
+
+
+
+
+

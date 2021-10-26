@@ -9,14 +9,15 @@ namespace TaxSolution.Client
     /// </summary>
     class Program
     {
-        private static IServiceProvider serviceProvider;
+        private static IServiceProvider? serviceProvider;
 
         static async Task Main(string[] args)
         {
             // Registering types into client container
             ConfigureServices();
             // Run client application
-            await serviceProvider.GetRequiredService<ClientApplication>().Run();
+            if(serviceProvider is not null)
+                await serviceProvider.GetRequiredService<ClientApplication>().Run();
             // Dispose
             DisposeServices();
             await Task.Yield();
@@ -34,7 +35,7 @@ namespace TaxSolution.Client
 
         private static void DisposeServices()
         {
-            if (serviceProvider != null && serviceProvider is IDisposable disposable)
+            if (serviceProvider is not null && serviceProvider is IDisposable disposable)
             {
                 disposable.Dispose();
             }

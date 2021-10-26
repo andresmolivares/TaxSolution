@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Threading.Tasks;
 using TaxSolution.Client;
-using TaxSolution.Models;
+using TaxSolution.Models.TaxLocation;
 
-namespace TaxSolution.Desktop
+namespace TaxSolution.Desktop.Model
 {
     public class MainWindowViewModel : Notifiable
     {
 
         private readonly TaxSolutionViewModel vm;
-        private IAsyncCommand<string> _GetRatesCommand;
-        private string _ZipCode;
-        private string _RateDetails;
+        private IAsyncCommand<string>? _GetRatesCommand;
+        private string? _ZipCode;
+        private string? _RateDetails;
 
         public MainWindowViewModel()
         {
-            vm = new TaxSolutionViewModel();
+            vm = new TaxSolutionViewModel(); 
         }
 
-        public string ZipCode 
+        public string? ZipCode
         {
-            get { return _ZipCode; }
+            get => _ZipCode;
             set
             {
                 _ZipCode = value;
@@ -29,9 +29,9 @@ namespace TaxSolution.Desktop
             }
         }
 
-        public string RateDetails
+        public string? RateDetails
         {
-            get { return _RateDetails; }
+            get => _RateDetails;
             set
             {
                 _RateDetails = value;
@@ -41,14 +41,10 @@ namespace TaxSolution.Desktop
 
         public IAsyncCommand<string> GetRatesCommand
         {
-            get
-            {
-                return _GetRatesCommand
-                  ?? (_GetRatesCommand = new AsyncCommand<string>(ExecuteGetRatesAsync, CanExecuteGetRates));
-            }
+            get => _GetRatesCommand ??= new AsyncCommand<string>(ExecuteGetRatesAsync, CanExecuteGetRates);
         }
 
-        private bool CanExecuteGetRates(string parameter)
+        private bool CanExecuteGetRates(string? parameter)
         {
             return !string.IsNullOrWhiteSpace(parameter);
         }
@@ -69,7 +65,7 @@ namespace TaxSolution.Desktop
                 var details = await vm.GetTaxRateByLocationAsync(request);
                 RateDetails = $"TaxJar Service results: \n{details}";
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 RateDetails = $"Error occurred: {e.Message}";
             }

@@ -5,6 +5,6 @@
     /// </summary>
     public abstract record BaseTaxRequest
     {
-        public string CalcKey { get; set; }
+        public string? CalcKey { get; set; }
     }
 }

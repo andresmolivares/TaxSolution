@@ -1,5 +1,7 @@
-﻿using System.Threading;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
+using TaxSolution.Models.TaxLocation;
 
 namespace TaxSolution.Models
 {
@@ -17,13 +19,13 @@ namespace TaxSolution.Models
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        ValueTask<TaxLocationRate> GetTaxRateByLocationAsync(TaxLocation location, CancellationToken token);
+        ValueTask<TaxLocationRate?> GetTaxRateByLocationAsync([Required]TaxLocation.TaxLocation location, CancellationToken token);
 
         /// <summary>
         /// Returns the tax amount for the specified order.
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        ValueTask<decimal> GetTaxForOrderRequestAsync(TaxOrder order, CancellationToken token);
+        ValueTask<decimal?> GetTaxForOrderRequestAsync([Required] TaxOrder.TaxOrder order, CancellationToken token);
     }
 }

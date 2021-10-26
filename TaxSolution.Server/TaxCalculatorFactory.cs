@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TaxSolution.Models;
 
 namespace TaxSolution.Server
@@ -7,8 +9,19 @@ namespace TaxSolution.Server
     /// Represents a class that provides tax calculator instances based on 
     /// key values.
     /// </summary>
-    public static class TaxCalculatorFactory
+    public class TaxCalculatorFactory : ITaxCalculatorFactory
     {
+        private readonly TaxJarConfiguration _taxConfig;
+        private readonly ILogger _logger;
+
+        public TaxCalculatorFactory(
+            IOptionsMonitor<TaxJarConfiguration> taxConfig,
+            ILogger logger
+            )
+        {
+            _taxConfig = taxConfig.CurrentValue;
+            _logger = logger;
+        }
         /// <summary>
         /// Gets instance of calculator in the TaxSolution.Server 
         /// library based on the specified key.
@@ -20,12 +33,13 @@ namespace TaxSolution.Server
         /// </requiement>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static ITaxCalculator GetCalculatorInstance(string key) => key.ToLower() switch
-        {
-            "http" => new TaxJarHttpClientCalculator(),
-            "ref" => new TaxJarReferenceCalculator(),
-            "web" => new TaxJarWebClientCalculator(),
-            _ => throw new ArgumentException($"Invalid calculator key: {key}", nameof(key)),
-        };
+        public ITaxCalculator GetCalculatorInstance(string? key) =>
+            key?.ToLower() switch
+            {
+                "http" => new TaxJarHttpClientCalculator(_taxConfig, _logger),
+                "ref" => new TaxJarReferenceCalculator(_taxConfig, _logger),
+                "web" => new TaxJarWebClientCalculator(_taxConfig, _logger),
+                _ => throw new InvalidOperationException($"Invalid calculator key: {key}"),
+            };
     }
 }
